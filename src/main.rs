@@ -145,6 +145,13 @@ fn main() {
     builder.target(Target::Stdout);
     builder.init();
 
+    info!("Input wav file: {}", wav_path.to_str().unwrap());
+    info!("Output png file: {}", png_path.to_str().unwrap());
+    info!("Output npz file: {}", npz_path.to_str().unwrap());
+    info!("Number of points in the time domain: {}", npoint);
+    info!("Maximum frequency in the frequency domain: {:.1}", freq_max);
+    info!("Operation mode: {}", operation_mode.to_string());
+
     // choose operation mode if "auto" is selected
     if operation_mode == OperationMode::Auto {
         if npoint > DEFAULT_DIRECT_CUTOFF_NPOINT {
@@ -154,7 +161,7 @@ fn main() {
             info!("Using direct mode due to small number of points in the time domain.");
             operation_mode = OperationMode::Direct;
         }
-    };
+    }
 
     let start = Instant::now();
     // read wav file

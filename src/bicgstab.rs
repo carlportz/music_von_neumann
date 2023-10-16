@@ -1,3 +1,4 @@
+use log::debug;
 use crate::defaults::DEFAULT_BICGSTAB_TOL;
 use crate::ndarray_complex::Conj;
 use crate::types::{CVector, CVectorView, Float};
@@ -26,14 +27,14 @@ pub fn bicgstab(
     let mut r_i: CVector = r0.clone();
     let mut p_i: CVector = r0;
 
+    debug!("Starting BICGSTAB iterations with tol = {:.3e} and maxiter = {}.", tol, maxiter);
     for iter in 0..maxiter {
         let nu: CVector = linop(p_i.view());
         let alpha: Complex<Float> = rho_i / r0_hat_conj.dot(&nu);
         let h: CVector = &x_i + alpha * &p_i;
         let s: CVector = &r_i - alpha * &nu;
-        println!("Iteration: {}, s_residual: {}", iter, s.norm());
         if s.norm() < tol {
-            println!("Converged in {} iterations.", iter);
+            debug!("Converged in {} iterations.", iter);
             return Ok(h);
         }
         let t: CVector = linop(s.view());
@@ -41,9 +42,11 @@ pub fn bicgstab(
         x_i = &h + omega * &s;
         r_i = &s - omega * &t;
         if r_i.norm() < tol {
-            println!("Converged in {} iterations.", iter);
+            debug!("Converged in {} iterations.", iter);
             return Ok(x_i);
         }
+        debug!("- iteration: {}, ‖s‖: {:10.3e}, ‖r‖: {:10.3e}", iter, s.norm(), r_i.norm());
+
         let rho_ip: Complex<Float> = r0_hat_conj.dot(&r_i);
         let beta: Complex<Float> = (rho_ip / rho_i) * (alpha / omega);
         rho_i = rho_ip;
