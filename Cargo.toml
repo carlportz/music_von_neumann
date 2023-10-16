@@ -1,0 +1,31 @@
+[package]
+name = "music_von_neumann"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+num-complex = "0.4"
+ndarray = { version = "0.15", features = ["blas", "approx", "serde-1", "rayon"] }
+ndarray-npy = "0.8"
+ndrustfft = "0.4"
+hound = "3.5"
+plotly = { version = "0.8", features = ["plotly_ndarray"] }
+log = "0.4"
+env_logger = "0.10"
+clap = "4.4"
+png = "0.17"
+
+[target.'cfg(all(target_os = "macos", target_arch = "aarch64"))'.dependencies]
+blas-src = { version = "0.8", features = ["accelerate"] }
+ndarray-linalg = { version = "0.16", default-features = false }
+
+[target.'cfg(not(all(target_os = "macos", target_arch = "aarch64")))'.dependencies]
+# blas-src = { version = "0.8", features = ["intel-mkl"] }
+ndarray-linalg = { version = "0.16", features = ["intel-mkl-static"] }
+
+[dev-dependencies]
+rand = { version = "0.8", features = ["small_rng"] }
+approx = "0.5"
+

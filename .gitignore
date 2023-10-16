@@ -1,0 +1,4 @@
+/target
+/tests/*.wav
+/tests/*.png
+/tests/*.npz
