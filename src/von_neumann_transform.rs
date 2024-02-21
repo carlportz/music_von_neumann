@@ -2,7 +2,8 @@ use crate::bicgstab::bicgstab;
 use crate::ndarray_complex::Conj;
 use crate::types::{CMatrix, CMatrixView, CVector, CVectorView, Float, RVector, RVectorView};
 use ndarray::{s, Array, Array3, ArrayView3};
-use ndarray_linalg::{Solve, SolveH};
+// use ndarray_linalg::{Solve, SolveH};
+use ndarray_linalg::Solve;
 use num_complex::{Complex, ComplexFloat};
 
 const PI: Float = std::f64::consts::PI as Float;
@@ -120,13 +121,15 @@ fn get_von_neumann_coefficients_direct(
         .conj()
         .dot(&signal);
     let s: CMatrix = get_ovlp_matrix(alpha, w_n_arr, t_n_arr);
-    // let s: CMatrix = (s.view().conj() + &s).mapv(|a| a / 2.0);
-
-    let q_nm: CMatrix = if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
-        s.solve_into(alpha_nm).unwrap().into_shape((k, k)).unwrap()
-    } else {
-        s.solveh_into(alpha_nm).unwrap().into_shape((k, k)).unwrap()
-    };
+    // let s: CMatrix = (s.view().t().conj() + &s).mapv(|a| a / 2.0);
+    
+    // // solveh appears to be buggy with accelerate AND intel-mkl
+    // let q_nm: CMatrix = if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
+    //     s.solve_into(alpha_nm).unwrap().into_shape((k, k)).unwrap()
+    // } else {
+    //     s.solveh_into(alpha_nm).unwrap().into_shape((k, k)).unwrap()
+    // };
+    let q_nm: CMatrix = s.solve_into(alpha_nm).unwrap().into_shape((k, k)).unwrap();
 
     q_nm
 }
@@ -340,7 +343,9 @@ mod tests {
             t_n_arr.view(),
         );
         let q_nm_ref = get_ref_von_neumann_coefficients();
-
+        
+        println!("{:?}", q_nm);
+        println!("{:?}", q_nm_ref);
         assert!(carray_abs_diff_eq(&q_nm, &q_nm_ref, 1e-10));
     }
 
